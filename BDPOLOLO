@@ -1,0 +1,161 @@
+CREATE DATABASE pololos;
+USE pololos;
+CREATE TABLE usuario
+(
+    id INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
+    usuario VARCHAR(20) NOT NULL UNIQUE,
+    contrasenia VARCHAR(8) NOT NULL
+);
+CREATE TABLE persona
+(
+    id INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
+    nombre VARCHAR(60) NOT NULL,
+    cedula VARCHAR(10) NOT NULL UNIQUE,
+    telefono VARCHAR(10) NOT NULL,
+    direccion VARCHAR(40) NOT NULL,
+    fecha_nacimiento DATE NOT NULL,
+    usuario_id INT NOT NULL REFERENCES usuario(id)
+);
+ALTER TABLE persona ADD FOREIGN KEY(usuario_id) REFERENCES usuario(id);
+CREATE TABLE cliente
+(
+    id INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
+    persona_id INT NOT NULL
+);
+CREATE TABLE ingrediente
+(
+    id INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
+    foto VARCHAR(225) NOT NULL,
+    nombre VARCHAR(20) NOT NULL,
+    precio DECIMAL(10,2) NOT NULL
+);
+CREATE TABLE categoria
+(
+	id INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
+    nombre VARCHAR(50) NOT NULL
+);
+CREATE TABLE comida
+(
+    id INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
+    codigo VARCHAR(15) NOT NULL UNIQUE,
+    nombre VARCHAR(60) NOT NULL,
+    foto VARCHAR(225) NOT NULL,
+    categoria_id INT NOT NULL,
+    cantidad INT NOT NULL DEFAULT 0,
+	precio DECIMAL(10,2) NOT NULL
+);
+ALTER TABLE comida ADD FOREIGN KEY(categoria_id) REFERENCES categoria(id);
+CREATE TABLE proveedor
+(
+    id INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
+    nombre VARCHAR(60) NOT NULL,
+    telefono VARCHAR(15) NULL DEFAULT NULL,
+    direccion VARCHAR(100) NOT NULL
+);
+CREATE TABLE ingrediente_x_comida
+(
+    id INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
+    ingrediente_id INT NOT NULL REFERENCES ingrediente(id),
+    comida_id INT NOT NULL REFERENCES comida(id),
+    precio DECIMAL(10,2) NOT NULL
+);
+ALTER TABLE ingrediente_x_comida ADD FOREIGN KEY(ingrediente_id) REFERENCES ingrediente(id);
+ALTER TABLE ingrediente_x_comida ADD FOREIGN KEY(comida_id) REFERENCES comida(id);
+CREATE TABLE marca
+(
+    id INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
+    nombre VARCHAR(20) NOT NULL
+);
+CREATE TABLE producto
+(
+    id INT PRIMARY KEY AUTO_INCREMENT NOT NULL, 
+    nombre VARCHAR(50) NOT NULL
+);
+CREATE TABLE marca_x_producto
+(
+    id INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
+    marca_id INT NOT NULL REFERENCES marca(id),
+    producto_id INT NOT NULL REFERENCES producto(id),
+    cantidad INT NOT NULL DEFAULT 0
+);
+ALTER TABLE marca_x_producto ADD FOREIGN KEY(marca_id) REFERENCES marca(id);
+ALTER TABLE marca_x_producto ADD FOREIGN KEY(producto_id) REFERENCES producto(id);
+CREATE TABLE proveedor_x_producto
+(
+    id INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
+    marca_producto_id INT NOT NULL REFERENCES marca_x_producto(id),
+    proveedor_id INT NOT NULL REFERENCES proveedor(id),
+    precio DECIMAL(10,2) NOT NULL DEFAULT 0
+);
+ALTER TABLE proveedor_x_producto ADD FOREIGN KEY(marca_producto_id) REFERENCES marca_x_producto(id);
+ALTER TABLE proveedor_x_producto ADD FOREIGN KEY(proveedor_id) REFERENCES proveedor(id);
+CREATE TABLE factura_compra
+(
+    id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    fecha DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    pagar DECIMAL(10,2) NOT NULL
+);
+CREATE TABLE compra
+(
+    id INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
+    precio DECIMAL(10,2) NOT NULL DEFAULT 0,
+    proveedor_producto_id INT NOT NULL REFERENCES proveedor_x_producto(id),
+    factura_compra_id INT NOT NULL REFERENCES factura_compra(id),
+    cantidad INT NOT NULL DEFAULT 0
+);
+ALTER TABLE compra ADD FOREIGN KEY(proveedor_producto_id) REFERENCES proveedor_x_producto(id);
+ALTER TABLE compra ADD FOREIGN KEY(factura_compra_id) REFERENCES factura_compra(id);
+CREATE TABLE area_empleado
+(
+ 	id INT PRIMARY KEY AUTO_INCREMENT NOT NULL,   
+    nombre VARCHAR(20) NOT NULL    
+);
+CREATE TABLE empleado
+(
+	id INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
+    persona_id INT REFERENCES persona(id),
+    sueldo DECIMAL(10,2) NOT NULL,
+    area_id INT NOT NULL,
+    comisiones DECIMAL(10,2) NOT NULL DEFAULT 0
+);
+ALTER TABLE empleado ADD FOREIGN KEY(persona_id) REFERENCES persona(id);
+ALTER TABLE empleado ADD FOREIGN KEY(area_id) REFERENCES area_empleado(id);
+CREATE TABLE factura_venta
+(
+    id INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
+    fecha DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    pagar DECIMAL(10,2) NOT NULL
+);
+CREATE TABLE metodo_pago
+(
+    id INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
+    nombre VARCHAR(20)NOT NULL
+);
+CREATE TABLE venta
+(
+	id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    usuario_id INT NOT NULL REFERENCES usuario(id),
+    comida_id INT NOT NULL REFERENCES comida(id),
+    factura_venta_id INT NOT NULL REFERENCES factura_venta(id),
+    metodo_pago_id INT NOT NULL,
+    precio DECIMAL(10,2) NOT NULL
+);
+ALTER TABLE venta ADD FOREIGN KEY(metodo_pago_id) REFERENCES metodo_pago(id);
+ALTER TABLE venta ADD FOREIGN KEY(usuario_id) REFERENCES usuario(id);
+ALTER TABLE venta ADD FOREIGN KEY(comida_id) REFERENCES comida(id);
+ALTER TABLE venta ADD FOREIGN KEY(factura_venta_id) REFERENCES factura_venta(id);
+CREATE TABLE mesa
+(
+    id INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
+    numero INT NOT NULL UNIQUE,
+    maximo_personas INT NOT NULL DEFAULT 6
+);
+CREATE TABLE empleado_x_mesa
+(
+	id INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
+    empleado_id INT NOT NULL,
+    mesa_id INT NOT NULL,
+    fecha DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+ALTER TABLE empleado_x_mesa ADD FOREIGN KEY(empleado_id) REFERENCES empleado(id);
+ALTER TABLE empleado_x_mesa ADD FOREIGN KEY(mesa_id) REFERENCES mesa(id);
